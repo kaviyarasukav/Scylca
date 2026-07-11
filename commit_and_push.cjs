@@ -5,6 +5,10 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 async function run() {
+    // Clean environment to prevent GH CLI from reading the environment dummy token
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.GH_TOKEN;
+    
     const dir = __dirname;
     
     console.log('Retrieving token from GitHub CLI...');
@@ -24,17 +28,11 @@ async function run() {
     let removedCount = 0;
 
     for (const [filepath, head, workdir, stage] of statusMatrix) {
-        // head: 0 (absent), 1 (present)
-        // workdir: 0 (absent), 1 (present), 2 (modified/different)
-        // stage: 0 (absent), 1 (present), 2 (modified/different)
-        
         if (workdir === 2 || (head === 0 && workdir === 1)) {
-            // Modified or untracked
             console.log(`Staging: ${filepath}`);
             await git.add({ fs, dir, filepath });
             addedCount++;
         } else if (workdir === 0 && head === 1) {
-            // Deleted
             console.log(`Removing: ${filepath}`);
             await git.remove({ fs, dir, filepath });
             removedCount++;
@@ -46,7 +44,6 @@ async function run() {
     } else {
         console.log(`Committed files: Added/Modified: ${addedCount}, Removed: ${removedCount}`);
         
-        // Commit
         const commitSha = await git.commit({
             fs,
             dir,
@@ -59,7 +56,6 @@ async function run() {
         console.log(`Committed successfully. SHA: ${commitSha}`);
     }
 
-    // Push main -> main
     console.log('Pushing local main to remote main branch...');
     const pushMainRes = await git.push({
         fs,
@@ -73,7 +69,6 @@ async function run() {
     });
     console.log('Push to main completed:', JSON.stringify(pushMainRes, null, 2));
 
-    // Push main -> master
     console.log('Pushing local main to remote master branch...');
     const pushMasterRes = await git.push({
         fs,
