@@ -226,8 +226,7 @@ interface TradingSlot {
   orderType: 'market' | 'limit';
   takeProfitPct: number;
   stopLossPct: number;
-  strategy: 'always_in',
-  tradeDirection: 'both' | 'standard';
+  strategy: 'always_in';
   tradeDirection?: 'both' | 'long' | 'short';
   lastExecutedCandleTime: number;
   lastSignal: string; // 'BUY' | 'SELL' | 'NONE'
