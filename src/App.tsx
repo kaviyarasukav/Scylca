@@ -1336,6 +1336,106 @@ export default function App() {
               </div>
             </div>
           </div>
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+              <h2 className="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wider">Engine Control</h2>
+              
+              <button 
+                onClick={toggleBot}
+                className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold transition-all duration-200 ${
+                  isRunning 
+                    ? 'bg-rose-600 text-white hover:bg-rose-500 border border-rose-600 shadow-sm' 
+                    : 'bg-emerald-600 text-white hover:bg-emerald-500 border border-emerald-600 shadow-sm'
+                }`}
+              >
+                {isRunning ? (
+                  <><Square className="w-4 h-4 fill-current" /> Stop Engine</>
+                ) : (
+                  <><Play className="w-4 h-4 fill-current" /> Start Engine</>
+                )}
+              </button>
+
+              {slots.length === 0 && !isRunning && (
+                <div className="mt-4 flex items-start gap-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  Add at least one trading slot above, then start the engine.
+                </div>
+              )}
+
+              <button
+                onClick={handlePing}
+                disabled={isPinging}
+                className="w-full mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-semibold transition-all duration-200 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-sm disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${isPinging ? 'animate-spin' : ''}`} /> 
+                {isPinging ? 'Pinging API...' : 'Ping Delta API'}
+              </button>
+
+              {pingData && (
+                <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium">Status</span>
+                    {pingData.success ? (
+                      <span className="text-emerald-600 font-bold tracking-wide">CONNECTED</span>
+                    ) : (
+                      <span className="text-rose-600 font-bold tracking-wide">FAILED</span>
+                    )}
+                  </div>
+                  
+                  {pingData.profile && (
+                    <div className="flex flex-col border-t border-slate-200 pt-2 gap-1">
+                      <span className="text-slate-500 font-medium">Account Details</span>
+                      <span className="text-slate-800 font-semibold">{(pingData.profile.first_name || '') + ' ' + (pingData.profile.last_name || '')} ({pingData.profile.email})</span>
+                      <span className="text-slate-400 font-mono text-[10px]">ID: {pingData.profile.id}</span>
+                    </div>
+                  )}
+
+                  {pingData.assets && (
+                    <div className="flex flex-col border-t border-slate-200 pt-2 gap-1">
+                      <span className="text-slate-500 font-medium mb-1">Assets</span>
+                      {pingData.assets.length > 0 ? (
+                        pingData.assets.map((a: any, i: number) => (
+                           <div key={i} className="flex justify-between font-mono">
+                             <span className="text-slate-600 font-semibold">{a.asset}</span>
+                             <span className="text-slate-800 font-bold">{a.total} <span className="text-slate-400 font-normal">(Free: {a.free})</span></span>
+                           </div>
+                        ))
+                      ) : (
+                        <span className="text-slate-400">No balances</span>
+                      )}
+                    </div>
+                  )}
+
+                  {!pingData.success && (
+                    <div className="text-rose-600 mt-2 whitespace-pre-wrap">{pingData.message}</div>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-200">
+                <button 
+                  onClick={() => executeManualTrade('BUY')}
+                  className="flex items-center justify-center py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-sm font-semibold shadow-sm transition-colors"
+                >
+                  Buy (Long)
+                </button>
+                <button 
+                  onClick={() => executeManualTrade('SELL')}
+                  className="flex items-center justify-center py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 rounded-lg text-sm font-semibold shadow-sm transition-colors"
+                >
+                  Sell (Short)
+                </button>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <button 
+                  onClick={clearMemory}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-semibold transition-all duration-200 bg-slate-50 text-slate-500 hover:bg-rose-50 hover:text-rose-600 border border-slate-200 hover:border-rose-200 shadow-sm"
+                >
+                  <Trash2 className="w-4 h-4" /> Clear All Slots & Memory
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Main Content Column */}
           <div className="md:col-span-2 flex flex-col gap-6">
@@ -2009,110 +2109,6 @@ export default function App() {
               </div>
             )}
 
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-              <h2 className="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wider">Engine Control</h2>
-              
-              <button 
-                onClick={toggleBot}
-                className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-bold transition-all duration-200 ${
-                  isRunning 
-                    ? 'bg-rose-600 text-white hover:bg-rose-500 border border-rose-600 shadow-sm' 
-                    : 'bg-emerald-600 text-white hover:bg-emerald-500 border border-emerald-600 shadow-sm'
-                }`}
-              >
-                {isRunning ? (
-                  <><Square className="w-4 h-4 fill-current" /> Stop Engine</>
-                ) : (
-                  <><Play className="w-4 h-4 fill-current" /> Start Engine</>
-                )}
-              </button>
-
-              {slots.length === 0 && !isRunning && (
-                <div className="mt-4 flex items-start gap-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                  Add at least one trading slot above, then start the engine.
-                </div>
-              )}
-
-              <button
-                onClick={handlePing}
-                disabled={isPinging}
-                className="w-full mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-semibold transition-all duration-200 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-sm disabled:opacity-50"
-              >
-                <RefreshCw className={`w-4 h-4 ${isPinging ? 'animate-spin' : ''}`} /> 
-                {isPinging ? 'Pinging API...' : 'Ping Delta API'}
-              </button>
-
-              {pingData && (
-                <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-medium">Status</span>
-                    {pingData.success ? (
-                      <span className="text-emerald-600 font-bold tracking-wide">CONNECTED</span>
-                    ) : (
-                      <span className="text-rose-600 font-bold tracking-wide">FAILED</span>
-                    )}
-                  </div>
-                  
-                  {pingData.profile && (
-                    <div className="flex flex-col border-t border-slate-200 pt-2 gap-1">
-                      <span className="text-slate-500 font-medium">Account Details</span>
-                      <span className="text-slate-800 font-semibold">{(pingData.profile.first_name || '') + ' ' + (pingData.profile.last_name || '')} ({pingData.profile.email})</span>
-                      <span className="text-slate-400 font-mono text-[10px]">ID: {pingData.profile.id}</span>
-                    </div>
-                  )}
-
-                  {pingData.assets && (
-                    <div className="flex flex-col border-t border-slate-200 pt-2 gap-1">
-                      <span className="text-slate-500 font-medium mb-1">Assets</span>
-                      {pingData.assets.length > 0 ? (
-                        pingData.assets.map((a: any, i: number) => (
-                           <div key={i} className="flex justify-between font-mono">
-                             <span className="text-slate-600 font-semibold">{a.asset}</span>
-                             <span className="text-slate-800 font-bold">{a.total} <span className="text-slate-400 font-normal">(Free: {a.free})</span></span>
-                           </div>
-                        ))
-                      ) : (
-                        <span className="text-slate-400">No balances</span>
-                      )}
-                    </div>
-                  )}
-
-                  {!pingData.success && (
-                    <div className="text-rose-600 mt-2 whitespace-pre-wrap">{pingData.message}</div>
-                  )}
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-200">
-                <button 
-                  onClick={() => executeManualTrade('BUY')}
-                  className="flex items-center justify-center py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-sm font-semibold shadow-sm transition-colors"
-                >
-                  Buy (Long)
-                </button>
-                <button 
-                  onClick={() => executeManualTrade('SELL')}
-                  className="flex items-center justify-center py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 rounded-lg text-sm font-semibold shadow-sm transition-colors"
-                >
-                  Sell (Short)
-                </button>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-slate-200">
-                <button 
-                  onClick={clearMemory}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-semibold transition-all duration-200 bg-slate-50 text-slate-500 hover:bg-rose-50 hover:text-rose-600 border border-slate-200 hover:border-rose-200 shadow-sm"
-                >
-                  <Trash2 className="w-4 h-4" /> Clear All Slots & Memory
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content Column */}
-          <div className="md:col-span-2 flex flex-col gap-6">
-            {/* Active Trading Slots */}
             <div className="flex-shrink-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
                 <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -2314,6 +2310,5 @@ export default function App() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
