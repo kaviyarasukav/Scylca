@@ -192,3 +192,14 @@ export function calculateAtrSeries(highs: number[], lows: number[], closes: numb
   }
   return result;
 }
+export function isVolumeAboveAverage(ohlcv: any[], lookback: number = 20): boolean {
+  if (ohlcv.length < lookback + 2) return true;
+  const closedIdx = ohlcv.length - 2;
+  const currentVolume = ohlcv[closedIdx][5] as number;
+  let totalVolume = 0;
+  for (let i = closedIdx - lookback; i < closedIdx; i++) {
+    totalVolume += ohlcv[i][5] as number;
+  }
+  const avgVolume = totalVolume / lookback;
+  return currentVolume >= avgVolume;
+}
